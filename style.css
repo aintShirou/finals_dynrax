@@ -38,6 +38,7 @@ body{
     opacity: 1;
     padding: 0 30px;
     font-family: "Inter", sans-serif;
+    position: absolute;
     left: 270px;
     top: 0;
     bottom: 0;
@@ -494,99 +495,40 @@ body{
 
 /* Transactions Sections */
 
-.income{
-    background-color: var(--bg-black-100);
-    color: var(--text-black-900);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    border-radius: 20px;
-    gap: 25px;
-    margin-top: 25px;
-    margin-bottom: 25px;
-}
-
-.increase{
-    color: #00BF63;
-}
-
 .transactions{
-    background-color: var(--bg-black-100);
+    background: var(--bg-black-100);
     color: var(--text-black-900);
-    height: 44rem;
+    padding: 10px;
     border-radius: 20px;
-    padding: 25px;
-}
-
-.table-trans {
-    display: flex;
-    justify-content: center;
-}
-
-.table-trans table {
-    color: var(--text-black-900);
-    border-spacing: 30px;
-    border-collapse: separate;
-}
-
-.table-trans table td {
-    padding: 1rem;
-    font-size: 30px;
-}
-
-.table-trans table tbody{
     text-align: center;
+    margin-bottom: 10px;
 }
 
-.table-trans table th {
-    color: #FF5757;
-}
-
-.table-trans table tbody {
-    margin-top: 10px;
-}
-
-.order-recent{
-    background-color: var(--bg-black-100);
+.transactions table{
     color: var(--text-black-900);
-    justify-content: center;
-    margin-top: 25px;
-    border-radius: 20px;
-    height: 50.5rem;
-}
-
-.order-recent h2{
-    margin-top: 25px;
-    margin-bottom: 15px;
-    padding: 25px;
-}
-
-.recent-pur table {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-    padding-left: 30px;
-    padding-right: 30px;
-}
-
-.recent-pur thead th {
-    text-align: center;
-}
-
-.recent-pur tbody td {
-    padding: 8px;
-    text-align: center; 
-}
-
-.recent-pur th, td {
-    border-bottom: 1px solid #ddd;
-    padding: 8px;
     text-align: left;
 }
 
-.recent-pur tbody tr:last-child td {
-    border-bottom: none;
+.order-recent{
+    background: var(--bg-black-100);
+    color: var(--text-black-900);
+    padding: 10px;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.order-recent table{
+    color: var(--text-black-900);
+    text-align: left;
+}
+
+table thead{
+    color: #FF5757;
+}
+
+table a{
+    color: var(--text-black-900);
 }
 
 /* Stocks Sections */

@@ -87,6 +87,7 @@ function lowStocks(){
     return $stmt = $con->query("SELECT * FROM product WHERE stocks < 35") ->fetchAll();
 }
 
+//Funtion on products.php
 
 function insertOrders($customer_name, $product_id, $quantity_ordered){
     $con = $this->opencon();
@@ -119,5 +120,85 @@ function updateProductStock($product_id, $quantity){
     }
 }
 
+
+
+// Pagination for Transaction Records
+
+function viewTransactions($start_from, $records_per_page) {
+    $con = $this->opencon();
+    $stmt = $con->prepare("SELECT
+    orders.customer_name,
+    transactions.trans_id,
+    transactions.payment_method,
+    DATE(transactions.paymentdate) AS paymentdate,
+    COUNT(orders.order_id) AS total_orders,
+    SUM(transactions.payment_total) AS total_purchases
+FROM
+    transactions
+INNER JOIN orders ON transactions.order_id = orders.order_id
+GROUP BY
+    orders.customer_name,
+    transactions.paymentdate
+ORDER BY
+    `transactions`.`paymentdate`
+DESC LIMIT :start_from, :records_per_page");
+    $stmt->bindParam(':start_from', $start_from, PDO::PARAM_INT);
+    $stmt->bindParam(':records_per_page', $records_per_page, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $result;
+}
+
+function getTotalTransactions(){
+    $con = $this->opencon();
+    $stmt = $con->prepare("SELECT COUNT(*) as total FROM (
+        SELECT
+            orders.customer_name,
+            transactions.trans_id,
+            transactions.payment_method,
+            DATE(transactions.paymentdate) AS paymentdate,
+            COUNT(orders.order_id) AS total_orders,
+            SUM(transactions.payment_total) AS total_purchases
+        FROM
+            transactions
+        INNER JOIN orders ON transactions.order_id = orders.order_id
+        GROUP BY
+            orders.customer_name,
+            transactions.paymentdate
+        ORDER BY
+            `transactions`.`paymentdate` DESC
+    ) as subquery");
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['total'];
+}
+
+
+function viewOrders($start_from, $records_per_page){
+    $con = $this->opencon();
+    $stmt = $con->prepare("SELECT product.product_id, CONCAT(product.product_brand , ' ', product.product_name) as product, product.price, orders.order_id, orders.quantity_ordered, (product.price * orders.quantity_ordered) AS total_price FROM `orders` INNER JOIN product ON orders.product_id = product.product_id GROUP BY order_id ORDER BY `orders`.`order_id` DESC LIMIT :start_from, :records_per_page");
+    $stmt->bindParam(':start_from', $start_from, PDO::PARAM_INT);
+    $stmt->bindParam(':records_per_page', $records_per_page, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+function getTotalOrders(){
+    $con = $this->opencon();
+    $stmt = $con->query("SELECT COUNT(*) FROM `orders`");
+    return $stmt->fetchColumn();
+}
+
+
+function getOrderDetails($order_id){
+    try{
+        $con = $this->opencon();
+        $stmt = $con->prepare("SELECT product.product_id, CONCAT(product.product_brand , ' ', product.product_name) as product, product.price, orders.customer_name, orders.order_id, orders.quantity_ordered, product.price, orders.quantity_ordered FROM `orders` INNER JOIN product ON orders.product_id = product.product_id WHERE orders.order_id = ?");
+        $stmt->execute([$order_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        return false;
+    }
+}
 
 }
