@@ -1,3 +1,46 @@
+<?php
+    
+    require_once('classes/database.php');
+    $con = new database();  
+
+    if (isset($_POST['checkout'])) {
+      try {
+          // Get the form data
+          $customer_name = $_POST['customer_name'];
+          $payment_method = $_POST['payment_method'];
+          $cart_items = json_decode($_POST['cart_items'], true);
+  
+          // Check if cart items are empty
+          if (empty($cart_items)) {
+              throw new Exception('Cart is empty');
+          }
+  
+          // Loop through the cart items and save each one to the database
+          foreach ($cart_items as $item) {
+              $product_id = $item['product_id'];
+              $quantity = $item['quantity'];
+  
+              // Insert the order into the database
+              $order_id = $con->insertOrders($customer_name, $product_id, $quantity);
+  
+              // Insert the transaction into the database
+              $con->insertTransaction($order_id, $payment_method, date('Y-m-d H:i:s'), $item['price'] * $quantity);
+  
+              // Subtract product bought from the available stocks
+              $con->updateProductStock($product_id, $quantity);
+          }
+          header("Location: product.php");
+          exit();
+      } catch (Exception $e) {
+          // Handle the exception
+          echo 'Error: '. $e->getMessage();
+      }
+  }
+  
+
+   ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +51,6 @@
     <!-- Style -->
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
 
-
     <!-- Bootstrap -->
     <link rel="stylesheet" href="bootstrap-4.5.3-dist/css/bootstrap.css">
 
@@ -17,12 +59,12 @@
 
 </head>
 <body>
-
+  
     <div class="maint-container">
 
         <div class="aside">
             <div class="navbar-logo">
-                <a href="index.html"><img src="import/Dynrax Web Finals.png"></a>
+                <a href="index.php"><img src="import/Dynrax Web Finals.png"></a>
             </div>
         
             <div class="navbar-toggle">
@@ -62,7 +104,7 @@
       
                             <!-- Customer Order Form -->
                             
-                            <form class="order-form">
+                            <form class="order-form" method="post">
                               <div class="orders">
                                 <div class="searchbar">
                                   <div class="row">
@@ -80,9 +122,14 @@
                                       <label for="productCategory" class="form-label">Category</label>
                                       <select class="form-select" id="productCategory" name="product_category">
                                         <option value="0">Select Category</option>
-                                        <option value="1">Auto Parts</option>
-                                        <option value="2">Oil/Fluids</option>
-                                        <option value="3">Car Accessories</option>
+                                        <?php 
+                                        $category = $con->viewCat();
+                                        foreach($category as $cat){
+                                        ?>
+                                          <option value="<?php echo $cat['cat_id'];?>"><?php echo $cat['cat_type'];?></option>
+                                        <?php
+                                        }
+                                        ?>
                                       </select>
                                     </div>
                                   </div>
@@ -99,67 +146,66 @@
                                   </div>
                                 </div>
                               </div>
-                            
+
                               <div class="container-fluid my-5">
                                 <div class="card-container">
+                                  <?php 
+                                  $products = $con->viewProducts();
+                                  foreach($products as $product) {
+                                  ?>
                                   <div class="view-products">
                                     <div class="product-boxs">
                                       <div class="row">
                                         <div class="col-md-3">
-                                          <img class="product-image" src="uploads/example.jpg">
+                                          <img class="product-image" src="<?php echo $product['item_image']; ?>">
                                         </div>
                                         <div class="col-md-6">
                                           <div class="product-details">  
-                                            <p class="product-title">High performance Engine Oil</p>
-                                            <h2 class="product-price">₱902</h2>
+                                            <p class="product-brand"><?php echo $product['product_brand']; ?></p>
+                                            <p class="product-title"><?php echo $product['product_name']; ?></p>
+                                            <h2 class="product-price">₱<?php echo $product['price']; ?></h2>
                                           </div>
                                         </div>
                                         <div class="col-md-3">
                                           <div class="add-cart-button">
-                                            <button>Add to Cart</button>
+                            
+                                            <button type="button" 
+                                              data-id="<?php echo $product['product_id']; ?>"
+                                              data-image-url="<?php echo $product['item_image']; ?>" 
+                                              data-brand="<?php echo $product['product_brand']; ?>" 
+                                              data-title="<?php echo $product['product_name']; ?>" 
+                                              data-price="<?php echo $product['price']; ?>">
+                                              Add to Cart
+                                            </button>
                                           </div>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
-                                  <div class="view-products">
-                                    <div class="product-boxs">
-                                      <div class="row">
-                                        <div class="col-md-3">
-                                          <img class="product-image" src="uploads/example.jpg">
-                                        </div>
-                                        <div class="col-md-6">
-                                          <div class="product-details">  
-                                            <p class="product-title">High performance Engine Oil</p>
-                                            <h2 class="product-price">₱902</h2>
-                                          </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                          <div class="add-cart-button">
-                                            <button>Add to Cart</button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
+                                  <?php
+                                  }
+                                  ?>
                                 </div>
                               </div>
-                              
-                            
+
                               <!-- paginationHTML insert Here -->
-                            
+
                               <div class="checkout">
                                 <div class="head"><p>My Cart</p></div>
                                 <div id="cartItem">Your cart is Empty</div>
                                 <div class="foot">
                                   <h3>Total</h3>
                                   <h2 id="total">₱ 0.00</h2>
-                                  <button id="checkoutButton" type="submit">Checkout</button>
+                                  <!-- Add a hidden field for the cart items -->
+                                  <input type="hidden" name="cart_items" id="cartItemsInput">
+                                  <button id="checkoutButton" type="submit" name="checkout">Checkout</button>
                                 </div>
                               </div>
                             </form>
-                          </div>
-                        </div>
+
+                              </div>
+                              </div>
+
                   </div>
                 </div>
                 
@@ -169,12 +215,57 @@
 
     </div>
 
+    <script>
+ // Add event listener to all "Add to Cart" buttons
+document.querySelectorAll('.add-cart-button button').forEach(function(button) {
+  button.addEventListener('click', function(event) {
+    // Get the product id, price, image url, brand, title and quantity from the button's data attributes
+    var productBox = event.target.closest('.product-boxs');
+    var price = parseFloat(productBox.querySelector('.product-price').textContent.slice(1)); // Extract price value
+    var product = {
+      product_id: event.target.dataset.id,
+      image_url: event.target.dataset.imageUrl,
+      brand: event.target.dataset.brand,
+      title: event.target.dataset.title,
+      price: price,
+      quantity: 1 // replace with actual quantity
+    };
+
+    // Add the product to the cart in session storage
+    var cartItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
+    var existingItem = cartItems.find(item => item.product_id === product.product_id);
+    if (existingItem) {
+      // If the product already exists in the cart, increment the quantity
+      existingItem.quantity++;
+    } else {
+      // If the product doesn't exist in the cart, add it
+      cartItems.push(product);
+    }
+
+    // Update the hidden input field for the cart items
+    document.getElementById('cartItemsInput').value = JSON.stringify(cartItems);
+
+    sessionStorage.setItem('cartItems', JSON.stringify(cartItems));
+  });
+});
+
+// Add event listener to the checkout button to clear the session storage
+document.getElementById('checkoutButton').addEventListener('click', function() {
+  sessionStorage.removeItem('cartItems');
+});
+
+// Add event listener to the window object to clear the session storage when the page is reloaded
+window.addEventListener('beforeunload', function() {
+  sessionStorage.removeItem('cartItems');
+});
+</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.0/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="bootstrap-4.5.3-dist/js/bootstrap.js"></script>
     <script src="script.js"></script>
-    <!-- <script src="additem.js"></script> -->
+    <script src="additem.js?v=<?php echo time(); ?>"></script>
 
 </body>
 </html>

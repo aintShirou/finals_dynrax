@@ -81,9 +81,43 @@ function delete($productid){
 }
 
 
+
 function lowStocks(){
     $con = $this->opencon();
     return $stmt = $con->query("SELECT * FROM product WHERE stocks < 35") ->fetchAll();
 }
+
+
+function insertOrders($customer_name, $product_id, $quantity_ordered){
+    $con = $this->opencon();
+    $query = $con->prepare("INSERT INTO orders (customer_name, product_id, quantity_ordered) VALUES (?, ?, ?)");
+    if (!$query->execute([$customer_name, $product_id, $quantity_ordered])) {
+        throw new Exception($query->errorInfo()[2]);
+    }
+    return $con->lastInsertId();
+}
+
+function insertTransaction($order_id, $payment_method, $payment_date, $total){
+    $con = $this->opencon();
+    $query = $con->prepare("INSERT INTO transactions (order_id, payment_method, paymentdate, payment_total) VALUES (?, ?, ?, ?)");
+    if (!$query->execute([$order_id, $payment_method, $payment_date, $total])) {
+        throw new Exception($query->errorInfo()[2]);
+    }
+}
+
+function updateProductStock($product_id, $quantity){
+    try{
+        $con = $this->opencon();
+        $con->beginTransaction();
+        $query = $con->prepare("UPDATE product SET stocks = stocks - ? WHERE product_id = ?");
+        $query->execute([$quantity, $product_id]);
+        $con->commit();
+        return true;
+    } catch(PDOException $e) {
+        $con->rollBack();
+        return false;
+    }
+}
+
 
 }
