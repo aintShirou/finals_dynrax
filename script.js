@@ -58,43 +58,34 @@ new Chart(ctxBar, {
 
 const ctxLine1 = document.getElementById('linechart');
 
-new Chart(ctxLine1, {
-    type: 'line',
-    data: {
-        labels: ['Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-                label: 'Brand',
-                data: [3000, 2500, 3000, 5000, 4000, 3000, 3500],
-                borderColor: '#FF66C4',
-                borderWidth: 2
+$.ajax({
+    url: 'get_chart_data.php', // URL of your server-side script
+    type: 'GET',
+    dataType: 'json',
+    success: function(data) {
+        new Chart(ctxLine1, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
             },
-            {
-                label: 'Tools',
-                data: [2000, 3500, 3500, 3000, 2000, 1500, 2400],
-                borderColor: '#A375FF',
-                borderWidth: 2
-            },
-            {
-                label: 'Stock',
-                data: [1000, 1500, 2000, 2500, 3000, 2000, 1000],
-                borderColor: '#FF914D',
-                borderWidth: 2
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'white' // set legend text color to white
+                        }
+                    }
+                }
             }
-        ]
+        });
     },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    color: 'white' // set legend text color to white
-                  }
-            }
-        }
+    error: function(jqXHR, textStatus, errorThrown) {
+        console.error('AJAX error:', textStatus, errorThrown);
     }
 });
-
 const ctxPie1 = document.getElementById('pieschart');
 
 new Chart(ctxPie1, {

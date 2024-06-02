@@ -173,6 +173,7 @@ function getTotalTransactions(){
     return $result['total'];
 }
 
+// Pagination for Orders Made by Customers
 
 function viewOrders($start_from, $records_per_page){
     $con = $this->opencon();
@@ -199,6 +200,16 @@ function getOrderDetails($order_id){
     } catch(PDOException $e) {
         return false;
     }
+}
+
+function totalCompletedOrders(){
+    $con = $this->opencon();
+    $stmt = $con->query("SELECT COUNT(*) as total FROM (
+        SELECT transactions.paymentdate
+        FROM transactions
+        GROUP BY transactions.paymentdate
+    ) as grouped_transactions");
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 }

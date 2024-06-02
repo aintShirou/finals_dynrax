@@ -1,3 +1,12 @@
+<?php
+
+require_once('classes/database.php');
+    $con = new database();  
+   
+    ?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
