@@ -80,7 +80,7 @@
                                 </thead>
                                 <tbody>
                                   <?php
-                                  $records_per_page = 10;
+                                  $records_per_page = 14;
                                   $trans_page = isset($_GET['trans_page']) ? $_GET['trans_page'] : 1;
                                   $start_from_trans = ($trans_page > 1) ? ($trans_page-1) * $records_per_page : 0;  
 
@@ -114,8 +114,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                      <div class="col-md-6">
+                    <div class="col-md-6">
                       <div class="order-recent">
     <h2>Recent Purchase</h2>
     <!-- Recent Purchases -->
@@ -130,7 +129,7 @@
             </thead>
             <tbody>
                 <?php
-                $records_per_page = 10;
+                $records_per_page = 14;
                 $order_page = isset($_GET['order_page']) ? $_GET['order_page'] : 1;
                 $start_from_order = ($order_page > 1) ? ($order_page-1) * $records_per_page : 0;
 
@@ -159,6 +158,8 @@
   }
     ?>
 </div>
+                </div>
+      
                         </div>
                     </div>
                   </div>

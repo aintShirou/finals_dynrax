@@ -169,8 +169,8 @@
                                         <div class="col-md-3">
                                           <div class="add-cart-button">
                             
-                                            <button type="button" 
-                                              data-id="<?php echo $product['product_id']; ?>"
+                                            <button type="button" class="add-button"
+                                              data-item-id="<?php echo $product['product_id']; ?>"
                                               data-image-url="<?php echo $product['item_image']; ?>" 
                                               data-brand="<?php echo $product['product_brand']; ?>" 
                                               data-title="<?php echo $product['product_name']; ?>" 
@@ -215,57 +215,118 @@
 
     </div>
 
-    <script>
- // Add event listener to all "Add to Cart" buttons
-document.querySelectorAll('.add-cart-button button').forEach(function(button) {
-  button.addEventListener('click', function(event) {
-    // Get the product id, price, image url, brand, title and quantity from the button's data attributes
-    var productBox = event.target.closest('.product-boxs');
-    var price = parseFloat(productBox.querySelector('.product-price').textContent.slice(1)); // Extract price value
-    var product = {
-      product_id: event.target.dataset.id,
-      image_url: event.target.dataset.imageUrl,
-      brand: event.target.dataset.brand,
-      title: event.target.dataset.title,
-      price: price,
-      quantity: 1 // replace with actual quantity
-    };
-
-    // Add the product to the cart in session storage
-    var cartItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
-    var existingItem = cartItems.find(item => item.product_id === product.product_id);
-    if (existingItem) {
-      // If the product already exists in the cart, increment the quantity
-      existingItem.quantity++;
-    } else {
-      // If the product doesn't exist in the cart, add it
-      cartItems.push(product);
-    }
-
-    // Update the hidden input field for the cart items
-    document.getElementById('cartItemsInput').value = JSON.stringify(cartItems);
-
-    sessionStorage.setItem('cartItems', JSON.stringify(cartItems));
-  });
-});
-
-// Add event listener to the checkout button to clear the session storage
-document.getElementById('checkoutButton').addEventListener('click', function() {
-  sessionStorage.removeItem('cartItems');
-});
-
-// Add event listener to the window object to clear the session storage when the page is reloaded
-window.addEventListener('beforeunload', function() {
-  sessionStorage.removeItem('cartItems');
-});
-</script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      let cart = [];
+  
+      // Listen for click events on the "Add to Cart" buttons
+      document.querySelectorAll('.add-button').forEach(button => {
+        button.addEventListener('click', event => {
+          const itemId = event.target.dataset.itemId;
+          const itemPrice = parseFloat(event.target.dataset.price);
+          const itemTitle = event.target.dataset.title;
+          const itemBrand = event.target.dataset.brand;
+          const itemImageUrl = event.target.dataset.imageUrl;
+  
+          // Check if the item is already in the cart
+          let existingItem = cart.find(item => item.product_id === itemId);
+  
+          if (existingItem) {
+            // If the item is already in the cart, increment the quantity
+            existingItem.quantity++;
+          } else {
+            // If the item is not in the cart, add it
+            cart.push({
+              product_id: itemId,
+              price: itemPrice,
+              product_name: itemTitle,
+              product_brand: itemBrand,
+              item_image: itemImageUrl,
+              quantity: 1
+            });
+          }
+  
+          // Update the cart display and total price
+          updateCartDisplay();
+        });
+      });
+  
+      function updateCartDisplay() {
+        const cartItemContainer = document.getElementById('cartItem');
+        const totalContainer = document.getElementById('total');
+        const cartItemsInput = document.getElementById('cartItemsInput');
+  
+        // Clear the cart display
+        cartItemContainer.innerHTML = '';
+        let total = 0;
+  
+        // Add each item in the cart to the display
+        cart.forEach((item, index) => {
+          let itemElement = document.createElement('div');
+          itemElement.innerHTML = `
+            <div class="cart-item">
+              <img src="${item.item_image}" alt="${item.product_name}">
+              <div class="item-details">
+                <h4>${item.product_name}</h4>
+                <p>${item.product_brand}</p>
+                <p>₱${item.price.toFixed(2)}</p>
+                <div class="quantity-controls">
+                  <button class="decrement" data-index="${index}">-</button>
+                  <span>${item.quantity}</span>
+                  <button class="increment" data-index="${index}">+</button>
+                </div>
+              </div>
+            </div>
+          `;
+  
+          cartItemContainer.appendChild(itemElement);
+  
+          // Add the item's price to the total
+          total += item.price * item.quantity;
+        });
+  
+        // Update the total price display
+        totalContainer.textContent = '₱ ' + total.toFixed(2);
+  
+        // Save the cart items to the hidden input field
+        cartItemsInput.value = JSON.stringify(cart);
+  
+        // Add event listeners to the increment and decrement buttons
+        document.querySelectorAll('.increment').forEach(button => {
+          button.removeEventListener('click', incrementItem);
+          button.addEventListener('click', incrementItem);
+        });
+  
+        document.querySelectorAll('.decrement').forEach(button => {
+          button.removeEventListener('click', decrementItem);
+          button.addEventListener('click', decrementItem);
+        });
+      }
+  
+      function incrementItem(event) {
+        const index = event.target.dataset.index;
+        cart[index].quantity++;
+        updateCartDisplay();
+      }
+  
+      function decrementItem(event) {
+        const index = event.target.dataset.index;
+        if (cart[index].quantity > 1) {
+          cart[index].quantity--;
+        } else {
+          cart.splice(index, 1);
+        }
+        updateCartDisplay();
+      }
+    });
+  </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.0/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="bootstrap-4.5.3-dist/js/bootstrap.js"></script>
     <script src="script.js"></script>
-    <script src="additem.js?v=<?php echo time(); ?>"></script>
+    <!-- <script src="additem.js?v=<?php echo time(); ?>"></script> -->
 
 </body>
 </html>

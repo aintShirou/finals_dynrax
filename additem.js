@@ -126,7 +126,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
         updateCart();
     }
-
 function handleQuantityIncrement(event) {
     const button = event.target;
     const itemId = parseInt(button.dataset.itemId); // Change 'id' to 'itemId'
@@ -137,7 +136,10 @@ function handleQuantityIncrement(event) {
         cart[itemIndex].quantity++;
         const input = document.querySelector(`input[data-item-id="${itemId}"]`);
         input.value = cart[itemIndex].quantity;
+        const hiddenInput = document.querySelector(`input[name="product_${itemId}"]`);
+        hiddenInput.value = cart[itemIndex].quantity; // Update hidden input field
         updateCart();
+        sessionStorage.setItem('cartItems', JSON.stringify(cart)); // Save the cart items to local storage
     } else {
         console.error(`Item with id ${itemId} not found in the cart`);
     }
@@ -153,11 +155,14 @@ function handleQuantityDecrement(event) {
         cart[itemIndex].quantity--;
         const input = document.querySelector(`input[data-item-id="${itemId}"]`);
         input.value = cart[itemIndex].quantity;
+        const hiddenInput = document.querySelector(`input[name="product_${itemId}"]`);
+        hiddenInput.value = cart[itemIndex].quantity; // Update hidden input field
     } else {
         cart.splice(itemIndex, 1);
     }
     
     updateCart();
+    sessionStorage.setItem('cartItems', JSON.stringify(cart)); // Save the cart items to local storage
 }
 
 function handleQuantityChange(event) {
@@ -168,16 +173,18 @@ function handleQuantityChange(event) {
     if (newQuantity > 0) {
         const itemIndex = cart.findIndex(item => item.product_id === itemId);
         cart[itemIndex].quantity = newQuantity;
+        const hiddenInput = document.querySelector(`input[name="product_${itemId}"]`);
+        hiddenInput.value = newQuantity; // Update hidden input field
     } else {
         handleRemoveItem({ target: { dataset: { itemId: itemId } } }); // Simulate remove button click
     }
 
     updateCart();
+    sessionStorage.setItem('cartItems', JSON.stringify(cart)); // Save the cart items to local storage
 }
-
 function handleRemoveItem(event) {
     const button = event.target;
-    const itemId = parseInt(button.dataset.id); // Change 'itemId' to 'id'
+    const itemId = parseInt(button.dataset.itemId); // Change 'id' to 'itemId'
 
     const itemIndex = cart.findIndex(item => item.product_id === itemId);
 
@@ -187,7 +194,4 @@ function handleRemoveItem(event) {
 
     updateCart();
 }
-
-// Initial cart update
-updateCart();
 });
