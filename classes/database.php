@@ -285,4 +285,20 @@ function searchProducts($searchQuery) {
 }
 
 
+// functions in index.php
+function addProductStock($product_id, $quantity){
+    try{
+        $con = $this->opencon();
+        $con->beginTransaction();
+        $query = $con->prepare("UPDATE product SET stocks = stocks + ? WHERE product_id = ?");
+        $query->execute([$quantity, $product_id]);
+        $con->commit();
+        return true;
+    } catch(PDOException $e) {
+        $con->rollBack();
+        return false;
+    }
+}
+
+
 }
