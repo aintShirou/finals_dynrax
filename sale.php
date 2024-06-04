@@ -117,9 +117,12 @@ require_once('classes/database.php');
       
                         <!-- View Total Completed Orders -->
       
-                        <h4>Number of Completed Orders</h4>
-                        <h1>38</h1>
-                      </div>
+                        <h4>Number of Completed Orders Today</h4>
+                          <?php
+                            $total_orders = $con->completedOrdersforToday();
+                          ?>
+                          <h1><?php echo $total_orders['total'];?></h1>
+                        </div>
                     </div>
                   </div>
                 </div>

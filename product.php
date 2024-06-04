@@ -89,7 +89,6 @@
                   <h1>Products</h1>
                 </div>
       
-                <!-- Chart of Sales -->
       
                 <div class="products">
                   <div class="container-fluid">

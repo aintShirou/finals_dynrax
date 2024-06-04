@@ -39,6 +39,18 @@ class database{
         return $stmt = $con->query("SELECT * FROM product") ->fetchAll();
     }
 
+    function viewProducts1($categoryId = null) {
+        $con = $this->opencon();
+        if ($categoryId) {
+            $stmt = $con->prepare("SELECT * FROM product WHERE cat_id = :cat_id");
+            $stmt->bindParam(':cat_id', $categoryId);
+        } else {
+            $stmt = $con->prepare("SELECT * FROM product");
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     function viewProduct($product_id){
         $con = $this->opencon();
         $stmt = $con->prepare("SELECT * FROM product WHERE product_id = ?");
@@ -204,12 +216,56 @@ function getOrderDetails($order_id){
 
 function totalCompletedOrders(){
     $con = $this->opencon();
+        $stmt = $con->query("SELECT COUNT(*) as total FROM (
+            SELECT transactions.paymentdate
+            FROM transactions
+            GROUP BY transactions.paymentdate
+        ) as grouped_transactions");
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function completedOrdersforToday(){
+   $con = $this->opencon();
     $stmt = $con->query("SELECT COUNT(*) as total FROM (
         SELECT transactions.paymentdate
         FROM transactions
+        WHERE DATE(transactions.paymentdate) = CURDATE()
         GROUP BY transactions.paymentdate
     ) as grouped_transactions");
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
+
+function topProduct(){
+    $con = $this->opencon();
+    $stmt = $con->query("SELECT
+    product.product_id,
+    product.item_image,
+    product.product_brand,
+    product.product_name,
+    SUM(orders.quantity_ordered) AS total_sales
+FROM
+    orders
+INNER JOIN product ON orders.product_id = product.product_id
+GROUP BY
+    product.product_id");
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+
+
+
+function searchProducts($searchQuery) {
+    $con = $this->opencon();
+    $stmt = $con->prepare("SELECT * FROM product WHERE product_name LIKE :searchQuery OR product_brand LIKE :searchQuery");
+
+    $searchParam = "%$searchQuery%";
+    $stmt->bindParam(':searchQuery', $searchParam);
+
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
 }

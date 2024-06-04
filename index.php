@@ -1,9 +1,11 @@
 <?php
-    
-    require_once('classes/database.php');
-    $con = new database();  
 
+require_once('classes/database.php');
+    $con = new database();  
+   
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +14,7 @@
     <title>Dynrax Auto Supply</title>
 
     <!-- Style -->
-    <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="style.css">
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="bootstrap-4.5.3-dist/css/bootstrap.css">
@@ -23,9 +25,9 @@
 </head>
 <body>
 
-  <!-- header -->
-
-  
+    <!-- Header -->
+      <!-- <?php include('header.php'); ?> -->
+    <!-- End Header -->
 
     <!-- Main Container -->
 
@@ -37,9 +39,9 @@
         <div class="navbar-logo">
             <a href="index.php"><img src="import/Dynrax Web Finals.png"></a>
         </div>
-    
+
         <div class="navbar-toggle">
-            <span></span>
+          <span></span>
         </div>
     
         <ul class="nav">
@@ -57,10 +59,6 @@
 
         <!-- Home Section -->
         <section class="home active section" id="home">
-            <div class="welcome-user">
-                <!-- Display of Username -->
-                <h2>Welcome, Username!</h2>
-            </div>
 
             <!-- Analytics -->
 
@@ -97,62 +95,73 @@
               </div>
             </div>
 
-            <!-- Charts -->
+            <!-- Low Stock of Product -->
 
             <div class="container-fluid">
               <div class="row mr-1">
-                <div class="col-md-7">
+                <div class="col-md-6">
                   <div class="titles-home">
                     <h3>Low Quantity</h3>
                   </div>
-                <div class="lowstock">
-                    <div class="row low-stock-products">
-                        <!-- Low stock product cards will be dynamically generated here -->
-                        <?php 
-                            $lowStockProducts = $con->lowStocks();
-                            foreach($lowStockProducts as $product) {
-                        ?>
-                        <div class="col-md-4 col-sm-6 col-xs-12 low-stock-product-card">
+
+                  <div class="container-fluid">
+                    <div class="card-container">
+                      <div class="lowstock">
+                        <div class="row low-stock-products">
+                          <div class="col-md-6 low-stock-product-card">
+
+                            <?php
+                              $lowstocks = $con->lowStocks();
+                              foreach($lowstocks as $lowstock){
+                                ?>
                             <div class="product-card">
-                                <img class="product-image" src="<?php echo $product['item_image']; ?>" alt="Product Image">
+                                <img class="product-images" src="<?php echo $lowstock['item_image'];?>" alt="Product Image">
                                 <div class="product-details">
-                                    <h4 class="product-name" style="color:black;"><?php echo $product['product_name']; ?></h4>
-                                    <p class="product-quantity">Only <strong><?php echo $product['stocks']; ?></strong> left in stock!</p>
-                                    <a class="product-link" href="stock.php">Go To Stock</a>
+                                    <h4 class="product-names"><?php echo $lowstock['product_brand'];?></h4>
+                                    <h4 class="product-name"><?php echo $lowstock['product_name'];?></h4>
+                                    <p class="product-quantitys">Only <strong><?php echo $lowstock['stocks'];?></strong> left in stock!</p>
+                                    <a class="product-link" href="#" data-toggle="modal" data-target="#editstockModal">Add Stock</a>
                                 </div>
                             </div>
-                        </div>
-                        <?php 
-                            } // End of the loop
-                        ?>
-                        <!-- More low stock product cards can be added here -->
-                    </div>
-                </div>
-                </div>
-                <div class="col-md-5">
-                  <div class="titles-home">
-                    <h3>Top Product</h3>
-                  </div>
-                  <div class="topproducts">
-                    <!-- View top product of the day -->
-                    <div class="container-fluid my-2">
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="top-product-card bg-black-100 p-3 rounded">
-                            <div class="product-card-top">
-                              <img class="product-image rounded" src="./uploads/example.jpg" alt="Product Image" width="50" height="50">
-                              <div class="product-details text-white">
-                                <h4 class="product-name">Oil</h4>
-                                <h4 class="product-category">Category:</h4>
-                                <p class="product-sales">100pcs</p>
-                              </div>
-                            </div>
+                            <?php
+                              }
+                              ?>
                           </div>
                         </div>
-                        <!-- Add more columns for more product cards -->
                       </div>
                     </div>
                   </div>
+
+                </div>
+
+                <!-- Top Product -->
+
+                <div class="col-md-6">
+                  <div class="titles-home">
+                    <h3>Top Product</h3>
+                  </div>
+                  <div class="container-fluid">
+                    <div class="card-container">
+                      <div class="topproduct">
+                        <div class="row low-stock-products">
+                          <div class="col-md-6 low-stock-product-card">
+                            <div class="product-card">
+                               <?php
+                                $top = $con->topProduct();
+                                  ?>
+                                <img class="product-images" src="<?php echo $top['item_image'];?>" alt="Product Image">
+                                <div class="product-details">
+                                    <h4 class="products-brand"><?php echo $top['product_brand'];?></h4>
+                                    <h4 class="products-name"><?php echo $top['product_name'];?></h4>
+                                    <p class="products-sale">Product-Sales <?php echo $top['total_sales'];?> </p>
+                                </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -163,10 +172,39 @@
 
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.0/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="bootstrap-4.5.3-dist/js/bootstrap.js"></script>
+    <!-- Edit Stock Only -->
+
+    <div class="modal fade" id="editstockModal" tabindex="-1" aria-labelledby="editstockModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content bg-dark">
+              <div class="modal-header" style="color: #fff;">
+                  <h5 class="modal-title" id="editstockModalLabel">Add Category</h5>
+              </div>
+              <div class="modal-body" style="color: #fff;">
+                  <form>
+                      <div class="mb-3">
+                          <label for="addcategory" class="form-label">Stock</label>
+                          <input type="number" class="form-control" id="addcategory">
+                      </div>
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-danger">Save changes</button>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function() {
+        $('.dropdown-toggle').dropdown();
+      });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="script.js"></script>
     <script src="additem.js"></script>
 

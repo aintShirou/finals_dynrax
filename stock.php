@@ -100,8 +100,12 @@
   }
   }
 
+  ?>
 
-?>
+  
+
+
+
 
 
 
@@ -159,22 +163,22 @@
                       <div class="row">
                         <div class="col-md-10">
                           <div class="search-cat">
-                            <div class="search-bar">
-                              <input type="text" class="form-control" placeholder="Search products...">
-                            </div>
-                            <div class="stock-category">
-                              <label for="stockCategory" class="form-label"></label>
-                              <select class="form-select" id="stockCategory">
+                              <div class="search-bar">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+                              </div>
+                              <div class="stock-category">
+                                  <label for="stockCategory" class="form-label"></label>
+                                  <select class="form-select" id="stockCategory">
                                   <option value="0">Select Category</option>
                                   <?php 
                                     $category = $con->viewCat();
                                     foreach($category as $cat){
-                                    ?>
+                                  ?>
                                   <option value="<?php echo $cat['cat_id'];?>"><?php echo $cat['cat_type'];?></option>
                                   <?php
-                                    }
-                                    ?>
-                              </select>
+                                   }
+                                  ?>
+                                </select>
                             </div>
                           </div>
                         </div>
@@ -200,7 +204,8 @@
                     <div class="container-fluid my-5">
                       <div class="card-container">
                         <?php 
-                          $products = $con->viewProducts();
+                          $categoryId = isset($_GET['cat_id']) ? $_GET['cat_id'] : null;
+                          $products = $con->viewProducts1($categoryId);
                           foreach($products as $product) {
                         ?>
                         <form method="post">
@@ -407,10 +412,10 @@ $(document).ready(function() {
   });
 });
 </script>
-<!-- AJAX for for Retrieving Data when Edit Button is clicked -->
+<!-- Script for Retrieving Data when Edit Button is clicked -->
 <script>
 $(document).ready(function() {
-  $('a[name="editButton"]').click(function(e) {
+  $(document).on('click', 'a[name="editButton"]', function(e) {
     e.preventDefault();
 
     var card = $(this).closest('.card');
@@ -427,6 +432,57 @@ $(document).ready(function() {
     $('#editProductPrice').val(productPrice);
     $('#editProductQuantity').val(productQuantity);
   });
+});
+</script>
+
+
+<script>
+$(document).ready(function(){
+  $('#searchInput, #stockCategory').on('input change', function() {
+    var searchQuery = $('#searchInput').val();
+    var selectedCategory = $('#stockCategory').val();
+
+    $.ajax({
+      url: 'search_products.php',
+      type: 'post',
+      data: {search: searchQuery, category: selectedCategory},
+      success: function(response) {
+        $('.card-container').html(response);
+      }
+    });
+  });
+});
+</script>
+
+<script>
+document.getElementById('stockCategory').addEventListener('change', function() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'get_products.php?cat_id=' + this.value, true);
+  xhr.onload = function() {
+    if (this.status == 200) {
+      var products = JSON.parse(this.responseText);
+      var output = '';
+      for(var i in products) {
+        output += '<form method="post"><div class="card">' +
+              '<img src="' + products[i].item_image + '" class="card-img-top" alt="Item Image">' +
+              '<div class="card-body">' +
+              '<h4 class="card-title">' + products[i].product_brand + '</h4>' +
+              '<h5 class="card-title">' + products[i].product_name + '</h5>' +
+              '<p class="card-text">Price: PHP ' + products[i].price + '</p>' +
+              '<p class="card-text">Stocks: ' + products[i].stocks + '</p>' +
+              '<div class="d-flex justify-content-between align-items-center">' +
+              '<input type="hidden" name="id" value="' + products[i].product_id + '">' +
+              '<a type="submit" class="btn btn-success" name="editButton" data-toggle="modal" data-target="#editProductModal">' +
+              '<i class=\'bx bxs-edit\' style="font-size: 25px; vertical-align: middle;"></i></a>' +
+              '<button type="submit" class="btn btn-danger" name="delete">' +
+              '<input type="hidden" name="id" value="' + products[i].product_id + '">' +
+              '<i class=\'bx bx-trash\' style="font-size: 25px; vertical-align: middle;"></i></button>' +
+              '</div></div></div></form>';
+      }
+      document.querySelector('.card-container').innerHTML = output;
+    }
+  }
+  xhr.send();
 });
 </script>
 
