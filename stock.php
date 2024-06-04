@@ -102,11 +102,6 @@
 
   ?>
 
-  
-
-
-
-
 
 
 <!DOCTYPE html>
@@ -126,6 +121,31 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
 </head>
+<style>
+.pagination {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.pagination a {
+    color: white;
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background-color .3s;
+    border: 1px solid #ddd;
+    margin: 0 4px;
+}
+
+.pagination a.active {
+    background-color: #4CAF50;
+    color: white;
+    border: 1px solid #4CAF50;
+}
+
+.pagination a:hover:not(.active) {background-color: #ddd;}
+</style>
 <body>
 
     <div class="main-container">
@@ -203,10 +223,12 @@
                   <div class="productcardview">
                     <div class="container-fluid my-5">
                       <div class="card-container">
-                        <?php 
-                          $categoryId = isset($_GET['cat_id']) ? $_GET['cat_id'] : null;
-                          $products = $con->viewProducts1($categoryId);
-                          foreach($products as $product) {
+                      <?php 
+                            $categoryId = isset($_GET['cat_id']) ? $_GET['cat_id'] : null;
+                            $page = isset($_GET['page']) ? $_GET['page'] : 1;
+                            $records_per_page = 2;
+                            $products = $con->viewProducts1($categoryId, $page, $records_per_page);
+                            foreach($products as $product) {
                         ?>
                         <form method="post">
                           <div class="card">
@@ -241,7 +263,20 @@
                     </div>
                   </div>
       
-                  <!-- paginationHTML insert Here -->
+                  <div class="pagination">
+    <?php
+        // Get the total number of products
+        $total_products = $con->getProductCount($categoryId);
+
+        // Calculate the total number of pages
+        $total_pages = ceil($total_products / $records_per_page);
+
+        // Display the pagination links
+        for ($i = 1; $i <= $total_pages; $i++) {
+            echo "<a href='stock.php?cat_id=$categoryId&page=$i'>$i</a> ";
+        }
+    ?>
+</div>
       
                 </div>
       

@@ -39,24 +39,41 @@ class database{
         return $stmt = $con->query("SELECT * FROM product") ->fetchAll();
     }
 
-    function viewProducts1($categoryId = null) {
+
+    function viewProducts1($categoryId = null, $page = 1, $records_per_page = 10) {
         $con = $this->opencon();
+
+        // Calculate the starting record of the current page
+        $start_from = ($page - 1) * $records_per_page;
+
         if ($categoryId) {
-            $stmt = $con->prepare("SELECT * FROM product WHERE cat_id = :cat_id");
+            $stmt = $con->prepare("SELECT * FROM product WHERE cat_id = :cat_id LIMIT :start_from, :records_per_page");
             $stmt->bindParam(':cat_id', $categoryId);
+            $stmt->bindParam(':start_from', $start_from, PDO::PARAM_INT);
+            $stmt->bindParam(':records_per_page', $records_per_page, PDO::PARAM_INT);
         } else {
-            $stmt = $con->prepare("SELECT * FROM product");
+            $stmt = $con->prepare("SELECT * FROM product LIMIT :start_from, :records_per_page");
+            $stmt->bindParam(':start_from', $start_from, PDO::PARAM_INT);
+            $stmt->bindParam(':records_per_page', $records_per_page, PDO::PARAM_INT);
         }
+
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+function getProductCount($categoryId = null) {
+    $con = $this->opencon();
 
-    function viewProduct($product_id){
-        $con = $this->opencon();
-        $stmt = $con->prepare("SELECT * FROM product WHERE product_id = ?");
-        $stmt->execute([$product_id]);
-        return $stmt->fetch();
+    if ($categoryId) {
+        $stmt = $con->prepare("SELECT COUNT(*) FROM product WHERE cat_id = :cat_id");
+        $stmt->bindParam(':cat_id', $categoryId);
+    } else {
+        $stmt = $con->prepare("SELECT COUNT(*) FROM product");
     }
+
+    $stmt->execute();
+    return $stmt->fetchColumn();
+}
+        
 
 
     
