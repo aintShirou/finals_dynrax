@@ -2,6 +2,12 @@
 
 require_once('classes/database.php');
     $con = new database();  
+
+
+
+    if(isset($_POST['addstock'])){
+
+    }
    
 ?>
 
@@ -120,6 +126,7 @@ require_once('classes/database.php');
                                     <h4 class="product-names"><?php echo $lowstock['product_brand'];?></h4>
                                     <h4 class="product-name"><?php echo $lowstock['product_name'];?></h4>
                                     <p class="product-quantitys">Only <strong><?php echo $lowstock['stocks'];?></strong> left in stock!</p>
+
                                     <a class="product-link" href="#" data-toggle="modal" data-target="#editstockModal">Add Stock</a>
                                 </div>
                             </div>
@@ -175,26 +182,76 @@ require_once('classes/database.php');
     <!-- Edit Stock Only -->
 
     <div class="modal fade" id="editstockModal" tabindex="-1" aria-labelledby="editstockModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content bg-dark">
-              <div class="modal-header" style="color: #fff;">
-                  <h5 class="modal-title" id="editstockModalLabel">Add Category</h5>
-              </div>
-              <div class="modal-body" style="color: #fff;">
-                  <form>
-                      <div class="mb-3">
-                          <label for="addcategory" class="form-label">Stock</label>
-                          <input type="number" class="form-control" id="addcategory">
-                      </div>
-                  </form>
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-danger">Save changes</button>
-              </div>
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark">
+      <div class="modal-header" style="color: #fff;">
+        <h5 class="modal-title" id="editstockModalLabel">Add Stocks</h5>
+      </div>
+      <div class="modal-body" style="color: #fff;">
+        <form>
+          <div class="mb-3">
+            <label for="product_name" class="form-label">Product Name</label>
+            <input type="text" class="form-control" id="product_name" readonly>
           </div>
+          <div class="mb-3">
+            <label for="product_details" class="form-label">Product Details</label>
+            <textarea class="text" id="product_details" readonly></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="stock" class="form-label">Stock</label>
+            <input type="number" class="form-control" id="stock">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" id="save-changes">Save changes</button>
       </div>
     </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    $('#editstockModal').on('shown.bs.modal', function(event) {
+      const product_id = $(event.relatedTarget).data('product-id');
+      $.ajax({
+        type: 'GET',
+        url: 'getproductdetails.php', // assume this script returns product details
+        data: { productId: product_id }, // pass the product ID as a parameter
+        success: function(response) {
+          $('#product_brand').text(response.brand);
+          $('#product_name').text(response.name);
+          $('#stock').text(response.stocks);
+        },
+        error: function(xhr, status, error) {
+          console.error(error);
+        }
+      });
+    });
+
+    $('#save-changes').on('click', function() {
+      const add_stock = $('#add_stock').val();
+      const product_id = $(event.relatedTarget).data('product-id');
+      $.ajax({
+        type: 'POST',
+        url: 'addproductstock.php', // assume this script updates the stock quantity
+        data: { productId: product_id, quantity: add_stock }, // pass the product ID and quantity as parameters
+        success: function(response) {
+          if (response === true) {
+            console.log('Stock updated successfully!');
+            $('#editstockModal').modal('hide');
+          } else {
+            console.log('Error updating stock!');
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error(error);
+        }
+      });
+    });
+  });
+</script>
 
     <script>
       $(document).ready(function() {

@@ -300,5 +300,14 @@ function addProductStock($product_id, $quantity){
     }
 }
 
-
+function getProductDetails($product_id){
+    try{
+    $con = $this->opencon();
+    $query = $con->prepare("SELECT * FROM product");
+    $query->execute([$product_id]);
+    return $query->fetch();
+} catch (PDOException $e) {
+    return [];
+}
+}
 }
